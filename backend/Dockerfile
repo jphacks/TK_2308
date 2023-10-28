@@ -9,4 +9,4 @@ ENV PATH=$PATH:/root/.local/bin
 COPY ./pyproject.toml ./poetry.lock /code/
 RUN /root/.local/bin/poetry install
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
