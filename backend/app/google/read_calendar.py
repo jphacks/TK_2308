@@ -23,14 +23,19 @@ if not creds or not creds.valid:
 # Google Calendar APIクライアントのビルド
 service = build('calendar', 'v3', credentials=creds)
 
-# 現在から1週間のイベントを取得
-now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-events_result = service.events().list(calendarId='primary', timeMin=now,
-                                      maxResults=10, singleEvents=True,
-                                      orderBy='startTime').execute()
+
+# 現在から1年後までのイベントを取得
+now = datetime.datetime.utcnow().isoformat() + 'Z'  # 現在のUTC時刻
+end_time = (datetime.datetime.utcnow() + datetime.timedelta(days=365)).isoformat() + 'Z'  # 現在から1年後のUTC時刻
+
+events_result = service.events().list(calendarId='primary', timeMin=now, timeMax=end_time, 
+                                      singleEvents=True, orderBy='startTime').execute()
 events = events_result.get('items', [])
 
 for event in events:
-    start = event['start'].get('dateTime', event['start'].get('date'))
-    print(start, event['summary'])
+    start_time = event['start'].get('dateTime', event['start'].get('date'))
+    end_time = event['end'].get('dateTime', event['end'].get('date'))
+    location = event.get('location', "場所未設定")  # locationが設定されていない場合は"場所未設定"と表示
+    title = event.get('summary', "タイトル未設定")  # summaryが設定されていない場合は"タイトル未設定"と表示
 
+    print(f"開始時刻: {start_time}, 終了時刻: {end_time}, 場所: {location}, タイトル: {title}")
