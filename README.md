@@ -19,11 +19,11 @@
 ## 開発技術
 ### 活用した技術
 #### API・データ
-* 
-* 
+* OpenAI API(ChatGPT)
+* Google Calendar API
 
 #### フレームワーク・ライブラリ・モジュール
-* 
+* Python, Oauth, Pickle
 * 
 
 #### デバイス
