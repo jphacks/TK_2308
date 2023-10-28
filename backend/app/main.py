@@ -77,7 +77,10 @@ def handle_message(event: schemas.SlackEvent, background_tasks: BackgroundTasks)
 
     if booking.is_asking_for_booking(message):
         print("is booking")
+
+        background_tasks.add_task(add_eyes_reaction, event)
         background_tasks.add_task(create_booking, event)
+
         return {"status": "ok"}
 
     res = slack.post_message(response_message)
@@ -87,6 +90,17 @@ def handle_message(event: schemas.SlackEvent, background_tasks: BackgroundTasks)
         print("message has been succesfully posted")
 
     return {"status": "ok"}
+
+
+def add_eyes_reaction(event: schemas.SlackEvent):
+    name = "eyes"
+    ts = event.event["ts"]
+    channel_id = event.event["channel"]
+
+    res = slack.add_reaction(name, ts, channel_id)
+
+    if res is None:
+        print("WARNING: failed to add a reaction")
 
 
 def create_booking(event: schemas.SlackEvent):
