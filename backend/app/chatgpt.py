@@ -102,22 +102,29 @@ def send_chat(
     print("prompt:", system_message, user_message)
     print("Got response:", res)
 
-    if is_function_triggered(res):
-        # 関数を使用すると判断された場合
-
-        # 使うと判断された関数名
-        function_name = message["function_call"]["name"]
-        # その時の引数dict
-        arguments = json.loads(message["function_call"]["arguments"])
-
-        print(function_name)
-        print(arguments)
-
-        event = create_event(**arguments)
-
-        add_event_to_calendar(event)
+    add_event_if_triggered(res)
 
     return res
+
+
+def add_event_if_triggered(chat_response: dict):
+    if not is_function_triggered(chat_response):
+        return False
+
+    # 関数を使用すると判断された場合
+
+    message = chat_response["choices"][0]["message"]
+    # 使うと判断された関数名
+    function_name = message["function_call"]["name"]
+    # その時の引数dict
+    arguments = json.loads(message["function_call"]["arguments"])
+
+    print(function_name)
+    print(arguments)
+
+    event = create_event(**arguments)
+
+    add_event_to_calendar(event)
 
 
 def is_function_triggered(chat_response: dict):
