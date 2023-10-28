@@ -1,12 +1,12 @@
 import openai
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, Request
 
 from . import schemas, chatgpt, slack
 
 app = FastAPI()
 
 
-with open('.openai.key', 'r') as f:
+with open(".openai.key", "r") as f:
     openai.api_key = f.read()
 
 
@@ -28,3 +28,31 @@ def post_chat(message: schemas.MessagePost):
 
     ok = res is not None
     return schemas.Message(ok=ok)
+
+
+@app.post("/slack/events")
+async def slack_events(request: Request, slack_event: schemas.SlackEvent):
+    body = await request.body()
+    headers = request.headers
+    print(body, headers)
+    if not slack.verify_signature(body, headers):
+        raise HTTPException(status_code=400, detail="Invalid request or signature")
+
+    # URL 認証のための challenge 応答
+    if slack.is_verification(slack_event.type):
+        return {"challenge": slack_event.challenge}
+
+    # メッセージイベントに応答
+
+    if not slack.is_callback(slack_event.type):
+        return {"error": "not handled"}
+
+    is_message = slack.is_event_message(slack_event.event["type"])
+    is_bot = slack.is_bot_message(slack_event.event)
+    if is_message and not is_bot:
+        print("posting to the channel")
+        res = slack.post_message("message received")
+        if res is None:
+            raise HTTPException(status_code=500, detail="Failed to send message")
+
+    return {"status": "ok"}
