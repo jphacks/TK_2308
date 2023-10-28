@@ -114,6 +114,13 @@ def create_booking(event: schemas.SlackEvent):
     schedules_str = ",".join(str(item) for item in cal)
 
     res = booking.create_booking(schedules_str, event.event["text"])
+    created = booking.add_event_if_triggered(res)
+
+    if created:
+        print("event added to the calendar")
+        slack.post_message("Gogle Calendar に予定を追加しましたッピ♪")
+        return
+
     content = res.choices[0].message.content
 
     res = slack.post_message(content)
