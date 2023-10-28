@@ -24,8 +24,11 @@ def post_chat(chat: schemas.ChatPost):
     message_str = f"「相手のメッセージ：{chat.message}」「自分のスケジュール：{schedules_str}」"
 
     res = chatgpt.send_chat(message_str)
+    content = res.choices[0].message.content
+    if content is None:
+        return
 
-    return schemas.Chat(message=chat.message, response=res.choices[0].message.content)
+    return schemas.Chat(message=chat.message, response=content)
 
 
 @app.post("/slack/events")

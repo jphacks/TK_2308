@@ -60,6 +60,21 @@ my_functions = [
     }
 ]
 
+def create_event(summary, start, end, location=None, description=None, member=None, timeZone='Asia/Tokyo'):
+    event = {
+        'summary': summary,
+        'location': location,
+        'description': None if member is None else f"参加者: {member}",
+        'start': {
+            'dateTime': start,
+            'timeZone': timeZone,
+        },
+        'end': {
+            'dateTime': end,
+            'timeZone': timeZone,
+        },
+    }
+    return event
 
 def send_chat(
     user_message: str,
@@ -96,6 +111,9 @@ def send_chat(
         print(function_name)
         print(arguments)
 
+        event = create_event(**arguments)
+
+        add_event_to_calendar(event)
 
     return res
 

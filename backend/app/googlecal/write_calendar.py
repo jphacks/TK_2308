@@ -23,20 +23,22 @@ def add_event_to_calendar(event_data):
     # Google Calendar APIクライアントのビルド
     service = build('calendar', 'v3', credentials=creds)
 
-    # イベントのフォーマット
-    event = {
-        'summary': event_data['summary'],
-        'location': event_data['location'],
-        'description': f"参加者: {event_data['member']}",
-        'start': {
-            'dateTime': event_data['start'],
-            'timeZone': 'Asia/Tokyo',
-        },
-        'end': {
-            'dateTime': event_data['end'],
-            'timeZone': 'Asia/Tokyo',
-        },
-    }
+
+
+    # # イベントのフォーマット
+    # event = {
+    #     'summary': event_data['summary'],
+    #     'location': event_data['location'],
+    #     'description': f"参加者: {event_data['member']}",
+    #     'start': {
+    #         'dateTime': event_data['start'],
+    #         'timeZone': 'Asia/Tokyo',
+    #     },
+    #     'end': {
+    #         'dateTime': event_data['end'],
+    #         'timeZone': 'Asia/Tokyo',
+    #     },
+    # }
 
             #     "properties": {
             #     "summary": {
@@ -62,7 +64,7 @@ def add_event_to_calendar(event_data):
             # },
 
     # イベントの追加
-    event = service.events().insert(calendarId='primary', body=event).execute()
+    event = service.events().insert(calendarId='primary', body=event_data).execute()
     print(f"イベントが追加されました: {event['htmlLink']}")
 
 # # イベントデータ
