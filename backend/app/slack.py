@@ -41,5 +41,9 @@ def is_event_message(event_type: str) -> bool:
     return event_type == "message"
 
 
+def is_event_mention(event_type: str) -> bool:
+    return event_type == "app_mention"
+
+
 def is_bot_message(event: dict) -> bool:
-    return "bot_id" not in event
+    return "bot_id" in event
