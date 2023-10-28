@@ -4,7 +4,7 @@ import json
 from . import chatgpt
 from .googlecal.write_calendar import add_event_to_calendar
 
-BOOKING_TOOKENS = ["調整", "ミーティング", "空いてる", "あいてる", "予定"]
+BOOKING_TOOKENS = ["調整", "ミーティング", "空いてる","空いている", "あいてる","あいている", "予定","面談","会議","日程","空き","あき","約束","スケジュール","都合","時間","カレンダー","打ち合わせ","日時"]
 
 
 def is_asking_for_booking(message: str) -> bool:
