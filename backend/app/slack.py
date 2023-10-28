@@ -24,6 +24,18 @@ def post_message(message: str, channel_name: str = DEFAULT_CHANNEL):
         return None
 
 
+def add_reaction(reaction_name: str, message_timestamp, channel_id: str):
+    try:
+        response = client.reactions_add(
+            channel=channel_id, name=reaction_name, timestamp=message_timestamp
+        )
+        print("Added reaction:", reaction_name)
+        return response
+    except SlackApiError as e:
+        print(f"Error while adding a reaction: {e.response['error']}")
+        return None
+
+
 def verify_signature(body: str, headers: dict):
     ok = signature_verifier.is_valid_request(body, headers)
     return ok
@@ -46,4 +58,4 @@ def is_event_mention(event_type: str) -> bool:
 
 
 def is_bot_message(event: dict) -> bool:
-    return "bot_id" in event
+    return "bot_id" in event or "app_id" in event
