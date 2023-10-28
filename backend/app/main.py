@@ -4,18 +4,21 @@ from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 
 from . import schemas, slack, booking
 
+#FastAPIのインスタンスを作成
 app = FastAPI()
 
-
+# OpenAI APIに使用するAPIキーをファイルから読み込む
 with open(".openai.key", "r") as f:
     openai.api_key = f.read()
 
-
+#ウェブサーバのルート('/')にGETリクエストが来た時に実行する関数
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-
+# ユーザからのメッセージを受け取った時に実行する関数
+# Googleカレンダーからスケジュールを読み込む
+# 相手からのメッセージをchatGPTに渡し，自分のスケジュールを含む文章をchatgpt.pyで指定した方法で返す
 @app.post("/chat", response_model=schemas.Chat)
 def post_chat(chat: schemas.ChatPost):
     cal = read_schedule_from_google()
@@ -31,7 +34,8 @@ def post_chat(chat: schemas.ChatPost):
 
     return schemas.Chat(message=chat.message, response=content)
 
-
+# Slackのイベントを受け取った時に実行する関数
+# チャレンジレスポンス認証やメッセージイベントへの応答を行う
 @app.post("/slack/events")
 async def slack_events(
     request: Request, slack_event: schemas.SlackEvent, background_tasks: BackgroundTasks
