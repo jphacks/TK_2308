@@ -1,11 +1,7 @@
 from . import chatgpt
 
 
-BOOKING_TOOKENS = [
-    "調整",
-    "ミーティング",
-    "来週",
-]
+BOOKING_TOOKENS = ["調整", "ミーティング", "空いてる", "あいてる", "予定"]
 
 
 def is_asking_for_booking(message: str) -> bool:
