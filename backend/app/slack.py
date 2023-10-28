@@ -4,10 +4,11 @@ from slack_sdk.errors import SlackApiError
 
 DEFAULT_CHANNEL = "#_gtb_bot"
 
-with open('/code/.slack.key', 'r') as f:
+with open("./.slack.key", "r") as f:
     TOKEN = f.read()
 
 client = WebClient(token=TOKEN)
+
 
 def post_message(message: str, channel_name: str = DEFAULT_CHANNEL):
     try:
