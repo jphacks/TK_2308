@@ -1,8 +1,10 @@
+from datetime import datetime
+
 import openai
 from .googlecal.googlecal import read_schedule_from_google
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 
-from . import schemas, slack, booking
+from . import schemas, slack, booking, summarize
 
 app = FastAPI()
 
@@ -25,6 +27,24 @@ def post_chat(chat: schemas.ChatPost):
     content = res.choices[0].message.content
 
     return schemas.Chat(message=chat.message, response=content)
+
+
+@app.post("/search", response_model=schemas.SummarizeResult)
+def post_search(sum: schemas.SummarizePost):
+    from_date = datetime.fromisoformat(sum.from_date)
+    to_date = datetime.fromisoformat(sum.to_date)
+
+    messages = slack.search_messages(sum.channel_name, from_date, to_date)
+    print(messages)
+
+    res = summarize.summarize_messages(messages)
+    summary = res.choices[0].message.content
+
+    print(summary)
+
+    slack.post_message(summary)
+
+    return {"status": "ok"}
 
 
 @app.post("/slack/events")

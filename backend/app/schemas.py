@@ -34,3 +34,20 @@ class SlackEvent(BaseModel):
     type: str
     challenge: str = None
     event: dict = None
+
+
+class SummarizeBase(BaseModel):
+    from_date: str
+    to_date: str
+    channel_name: str
+
+    class Config:
+        orm_mode = True
+
+
+class SummarizePost(SummarizeBase):
+    pass
+
+
+class SummarizeResult(SummarizeBase):
+    summary: str
