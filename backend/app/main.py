@@ -1,8 +1,8 @@
 import openai
 from .googlecal.googlecal import read_schedule_from_google
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 
-from . import schemas, chatgpt, slack
+from . import schemas, slack, booking
 
 app = FastAPI()
 
@@ -21,15 +21,18 @@ def post_chat(chat: schemas.ChatPost):
     cal = read_schedule_from_google()
     schedules_str = ",".join(str(item) for item in cal)
 
-    message_str = f"「相手のメッセージ：{chat.message}」「自分のスケジュール：{schedules_str}」"
+    res = booking.create_booking(schedules_str, chat.message)
+    content = res.choices[0].message.content
 
-    res = chatgpt.send_chat(message_str)
-
-    return schemas.Chat(message=chat.message, response=res.choices[0].message.content)
+    return schemas.Chat(message=chat.message, response=content)
 
 
 @app.post("/slack/events")
-async def slack_events(request: Request, slack_event: schemas.SlackEvent):
+async def slack_events(
+    request: Request, slack_event: schemas.SlackEvent, background_tasks: BackgroundTasks
+):
+    print("/slack/events")
+
     body = await request.body()
     headers = request.headers
     print(body, headers)
@@ -48,17 +51,68 @@ async def slack_events(request: Request, slack_event: schemas.SlackEvent):
         print("unknown event:", slack_event.type)
         return {"error": "not handled"}
 
+    response = None
+
     event_type = slack_event.event["type"]
     is_message = slack.is_event_message(event_type)
     is_mention = slack.is_event_mention(event_type)
     is_bot = slack.is_bot_message(slack_event.event)
+
     if (is_message or is_mention) and not is_bot:
-        print("posting to the channel")
-        res = slack.post_message("message received")
-        if res is None:
-            raise HTTPException(status_code=500, detail="Failed to send message")
-        else:
-            print("message has been succesfully posted")
+        print("handling normal message")
+        response = handle_message(slack_event, background_tasks)
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported event")
 
     print("done")
+
+    return response
+
+
+def handle_message(event: schemas.SlackEvent, background_tasks: BackgroundTasks):
+    print("posting to the channel")
+
+    message = str(event.event["text"])
+    response_message = "message received"
+
+    if booking.is_asking_for_booking(message):
+        print("is booking")
+
+        background_tasks.add_task(add_eyes_reaction, event)
+        background_tasks.add_task(create_booking, event)
+
+        return {"status": "ok"}
+
+    res = slack.post_message(response_message)
+    if res is None:
+        raise HTTPException(status_code=500, detail="Failed to send message")
+    else:
+        print("message has been succesfully posted")
+
     return {"status": "ok"}
+
+
+def add_eyes_reaction(event: schemas.SlackEvent):
+    name = "eyes"
+    ts = event.event["ts"]
+    channel_id = event.event["channel"]
+
+    res = slack.add_reaction(name, ts, channel_id)
+
+    if res is None:
+        print("WARNING: failed to add a reaction")
+
+
+def create_booking(event: schemas.SlackEvent):
+    print("creating booking. target event:", event)
+    cal = read_schedule_from_google()
+    schedules_str = ",".join(str(item) for item in cal)
+
+    res = booking.create_booking(schedules_str, event.event["text"])
+    content = res.choices[0].message.content
+
+    res = slack.post_message(content)
+    if res is None:
+        print("Error: failed to post message")
+    else:
+        print("message has been succesfully posted")
