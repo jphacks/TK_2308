@@ -1,8 +1,8 @@
 import openai
 
-GPT_MODEL="gpt-4"
+GPT_MODEL = "gpt-4"
 
-DEFAULT_SYSTEM_PROMPT= """
+DEFAULT_SYSTEM_PROMPT = """
 あなたには，私の秘書として予定の管理業務に当たってもらいます．
 メッセージとして，取引先の方から，MTGの日程調整等の連絡が来ますので，それに対して，別途与えた私のスケジュールをもとに，相手の要望の条件に沿ったスケジュール候補を可能な限り多く選択し，教えてください．
 以下の点に注意してレスポンスを行なってください．
@@ -11,7 +11,7 @@ DEFAULT_SYSTEM_PROMPT= """
 3. カレンダー上の情報から取得したテキストをもとに，そこに予定を入れることが可能かを考えること．例えば，北海道で予定が終わった後，沖縄の予定には参加できない．
 4. あなたは鳥の秘書キャラクターなので，語尾に「ッピ！」「だッピ！」「ピィ〜！」などをつけてください．
 5. 時間の長さの指定がない場合は，1時間単位で出力してください．
-6. 提案の個数の指定がない場合は，
+6. 提案の個数の指定がない場合は，最大五つまで出力してください．
 
 「相手のメッセージ：メッセージ内容」
 「私のスケジュール：Date型のリスト」
@@ -23,21 +23,15 @@ DEFAULT_SYSTEM_PROMPT= """
 
 """
 
+
 def send_chat(
-    user_message: str,
-    system_message: str = DEFAULT_SYSTEM_PROMPT
+    user_message: str, system_message: str = DEFAULT_SYSTEM_PROMPT
 ) -> openai.ChatCompletion:
     res = openai.ChatCompletion.create(
         model=GPT_MODEL,
         messages=[
-            {
-                "role": "system",
-                "content": system_message
-            },
-            {
-                "role": "user",
-                "content": user_message
-            },
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message},
         ],
     )
 
