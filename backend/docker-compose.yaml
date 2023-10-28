@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      dockerfile: "./Dockerfile"
+      context: "."
+
+    volumes:
+      - ".:/code"
+    ports:
+      - "8080:80"
+
+  prism:
+    profiles:
+      - mock
+    image: stoplight/prism
+    links:
+      - backend
+    ports:
+      - "4010:4010"
+    command: "mock -h 0.0.0.0 http://backend:80/openapi.json"
