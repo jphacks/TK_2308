@@ -28,3 +28,9 @@ class MessagePost(MessageBase):
 
 class Message(MessageBase):
     ok: bool
+
+
+class SlackEvent(BaseModel):
+    type: str
+    challenge: str = None
+    event: dict = None
