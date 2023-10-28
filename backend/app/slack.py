@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from slack_sdk import WebClient
 from slack_sdk.signature import SignatureVerifier
 from slack_sdk.errors import SlackApiError
@@ -34,6 +36,16 @@ def add_reaction(reaction_name: str, message_timestamp, channel_id: str):
     except SlackApiError as e:
         print(f"Error while adding a reaction: {e.response['error']}")
         return None
+
+
+def search_messages(channel_name: str, from_date: datetime, to_date: datetime):
+    after = from_date.strftime("%Y-%m-%d")
+    before = to_date.strftime("%Y-%m-%d")
+    query = f"in:#{channel_name} after:{after} before:{before}"
+
+    res = client.search_messages(query=query)
+    print(res)
+    return res
 
 
 def verify_signature(body: str, headers: dict):
