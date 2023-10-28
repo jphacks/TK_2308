@@ -13,6 +13,9 @@ SQLAlchemy = "^2.0.22"
 sqlalchemy_seed = "^0.3.0"
 slack-sdk = "^3.23.0"
 openai = "^0.28.1"
+google-api-python-client = "^2.105.0"
+google-auth-httplib2 = "^0.1.1"
+google-auth-oauthlib = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -1,4 +1,5 @@
 import openai
+from .googlecal.googlecal import read_schedule_from_google
 from fastapi import FastAPI, Depends, HTTPException, Request
 
 from . import schemas, chatgpt, slack
@@ -17,17 +18,14 @@ def read_root():
 
 @app.post("/chat", response_model=schemas.Chat)
 def post_chat(chat: schemas.ChatPost):
-    res = chatgpt.send_chat(chat.message)
+    cal = read_schedule_from_google()
+    schedules_str = ",".join(str(item) for item in cal)
+
+    message_str = f"「相手のメッセージ：{chat.message}」「自分のスケジュール：{schedules_str}」"
+
+    res = chatgpt.send_chat(message_str)
 
     return schemas.Chat(message=chat.message, response=res.choices[0].message.content)
-
-
-@app.post("/post", response_model=schemas.Message)
-def post_chat(message: schemas.MessagePost):
-    res = slack.post_message(message.message)
-
-    ok = res is not None
-    return schemas.Message(ok=ok)
 
 
 @app.post("/slack/events")
