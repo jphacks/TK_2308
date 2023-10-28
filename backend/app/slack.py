@@ -46,4 +46,4 @@ def is_event_mention(event_type: str) -> bool:
 
 
 def is_bot_message(event: dict) -> bool:
-    return "bot_id" in event
+    return "bot_id" in event or "app_id" in event
