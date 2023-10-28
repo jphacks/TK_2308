@@ -1,11 +1,11 @@
 services:
   backend:
     build:
-      dockerfile: "./Dockerfile"
-      context: "."
+      dockerfile: "./backend/Dockerfile"
+      context: "./backend"
 
     volumes:
-      - ".:/code"
+      - "./backend:/code"
     ports:
       - "8080:80"
 
