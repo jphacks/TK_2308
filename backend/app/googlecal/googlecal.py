@@ -17,9 +17,10 @@ def read_schedule_from_google():
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 './app/googlecal/credentials.json', ['https://www.googleapis.com/auth/calendar.readonly'])
-            creds = flow.run_local_server(port=8080)
+            creds = flow.run_local_server(port=8081)
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
+                
 
     # Google Calendar APIクライアントのビルド
     service = build('calendar', 'v3', credentials=creds)
