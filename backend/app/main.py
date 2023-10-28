@@ -1,5 +1,6 @@
 import openai
 from fastapi import FastAPI
+from .googlecal.googlecal import read_schedule_from_google
 
 from . import schemas, chatgpt
 
@@ -17,6 +18,8 @@ def read_root():
 
 @app.post("/chat", response_model=schemas.Chat)
 def post_chat(chat: schemas.ChatPost):
-    res = chatgpt.send_chat(chat.message)
+
+    cal = read_schedule_from_google()
+    res = chatgpt.send_chat(chat.message + cal)
 
     return schemas.Chat(message=chat.message, response=res.choices[0].message.content)
