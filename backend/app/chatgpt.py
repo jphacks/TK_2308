@@ -1,4 +1,6 @@
 import openai
+import json
+from .googlecal.write_calendar import add_event_to_calendar 
 
 GPT_MODEL="gpt-4"
 
@@ -23,12 +25,50 @@ DEFAULT_SYSTEM_PROMPT= """
 
 """
 
+my_functions = [
+    {
+        "name": "add_event_to_calendar",
+        "description": "予定への参加が可能となった場合に呼ばれるfunction.予定の開始時間と終了時間，タイトル(やること)が決まっていたら，Googleカレンダーに追加する関数．面談やMTGなどのアポイントを求められ，そのタイミングに自身のスケジュールが空いていたら，関数を呼ぶ",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "summary": {
+                    "type":"string",
+                    "description":"ミーティングなどのアポイント予定を確保した際，保存するためのイベントのタイトル",
+                },
+                "location": {
+                    "type":"string",
+                    "description":"ミーティングなどのアポイント予定を確保した際，開催するための場所",
+                },
+                "member": {
+                    "type":"string",
+                    "description" : "ミーティングなどのアポイント予定を確保した際，イベントの参加者. カンマ区切りで複数人登録可能",
+                },
+                "start": {
+                    "type": "string",
+                    "description":"ミーティングなどのアポイント予定を確保した際, 予定の開始時刻．dateTimeの形式であり，timezoneはAsia/Tokyo",
+                    "format": "date-time",
+                },
+                "end": {
+                    "type": "string",
+                    "description":"ミーティングなどのアポイント予定を確保した際, 予定の終了時刻．dateTimeの形式であり，timezoneはAsia/Tokyo. 開始時刻のみの指定だった場合，1時間として確保",
+                    "format": "date-time",
+                },
+            },
+            "required": ["summary", "start", "end"]
+        }
+    }
+]
+
+
 def send_chat(
     user_message: str,
     system_message: str = DEFAULT_SYSTEM_PROMPT
 ) -> openai.ChatCompletion:
     res = openai.ChatCompletion.create(
         model=GPT_MODEL,
+        functions=my_functions,
+        function_call="auto",
         messages=[
             {
                 "role": "system",
@@ -44,4 +84,18 @@ def send_chat(
     print("prompt:", system_message, user_message)
     print("Got response:", res)
 
+    message = res["choices"][0]["message"]
+    if message.get("function_call"):
+        # 関数を使用すると判断された場合
+
+        # 使うと判断された関数名
+        function_name = message["function_call"]["name"]
+        # その時の引数dict
+        arguments = json.loads(message["function_call"]["arguments"])
+
+        print(function_name)
+        print(arguments)
+
+
     return res
+
