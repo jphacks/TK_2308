@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      dockerfile: "./backend/Dockerfile"
+      dockerfile: "./Dockerfile"
       context: "./backend"
 
     volumes:
