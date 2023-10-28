@@ -18,3 +18,5 @@ def read_root():
 @app.post("/chat", response_model=schemas.Chat)
 def post_chat(chat: schemas.ChatPost):
     res = chatgpt.send_chat(chat.message)
+
+    return schemas.Chat(message=chat.message, response=res.choices[0].message.content)
