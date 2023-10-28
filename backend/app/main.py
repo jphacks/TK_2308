@@ -2,7 +2,7 @@ import openai
 from .googlecal.googlecal import read_schedule_from_google
 from fastapi import FastAPI, Depends, HTTPException, Request
 
-from . import schemas, chatgpt
+from . import schemas, chatgpt, slack
 
 app = FastAPI()
 
@@ -18,9 +18,8 @@ def read_root():
 
 @app.post("/chat", response_model=schemas.Chat)
 def post_chat(chat: schemas.ChatPost):
-
     cal = read_schedule_from_google()
-    schedules_str = ','.join(str(item) for item in cal)
+    schedules_str = ",".join(str(item) for item in cal)
 
     message_str = f"「相手のメッセージ：{chat.message}」「自分のスケジュール：{schedules_str}」"
 

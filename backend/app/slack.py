@@ -7,7 +7,7 @@ DEFAULT_CHANNEL = "#_gtb_bot"
 with open("./.slack.key", "r") as f:
     TOKEN = f.read()
 
-with open("/code/.slack-sign.key", "r") as f:
+with open("./.slack-sign.key", "r") as f:
     SLACK_SIGNING_SECRET = f.read()
 
 client = WebClient(token=TOKEN)
