@@ -17,7 +17,13 @@ DEFAULT_SYSTEM_PROMPT = """
 
 「相手のメッセージ：メッセージ内容」
 「私のスケジュール：Date型のリスト」
-といった形で与えられますので，適切な挨拶やお礼，スケジュールと相手のメッセージに基づいた予定の提示を行なってください．
+といった形で与えられます．
+
+日付，時間をDateTime型として扱い，候補時間同士を1つ1つ比較して処理を行うようにしてください．
+また，連続して空いている時間においては，そのうちを占める時間を指定して提示できるようにしてください．
+例えば，10:00~12:00が空いている場合は，10:30~11:30の提案を受け入れることが可能です．
+
+そして，適切な挨拶やお礼，スケジュールと相手のメッセージに基づいた予定の提示を行なってください．
 
 日程の出力の方法は，以下の例に倣って出力してください．
 11/1(月) 10:00~11:00, 13:00~14:00, 16:00~17:00
@@ -193,31 +199,6 @@ my_functions = [
 ]
 
 
-def create_event(
-    summary,
-    start,
-    end,
-    location=None,
-    description=None,
-    member=None,
-    timeZone="Asia/Tokyo",
-):
-    event = {
-        "summary": summary,
-        "location": location,
-        "description": None if member is None else f"参加者: {member}",
-        "start": {
-            "dateTime": start,
-            "timeZone": timeZone,
-        },
-        "end": {
-            "dateTime": end,
-            "timeZone": timeZone,
-        },
-    }
-    return event
-
-
 def send_chat(
     user_message: str, system_message: str = DEFAULT_SYSTEM_PROMPT
 ) -> openai.ChatCompletion:
@@ -234,29 +215,7 @@ def send_chat(
     print("prompt:", system_message, user_message)
     print("Got response:", res)
 
-    add_event_if_triggered(res)
-
     return res
-
-
-def add_event_if_triggered(chat_response: dict):
-    if not is_function_triggered(chat_response):
-        return False
-
-    # 関数を使用すると判断された場合
-
-    message = chat_response["choices"][0]["message"]
-    # 使うと判断された関数名
-    function_name = message["function_call"]["name"]
-    # その時の引数dict
-    arguments = json.loads(message["function_call"]["arguments"])
-
-    print(function_name)
-    print(arguments)
-
-    event = create_event(**arguments)
-
-    add_event_to_calendar(event)
 
 
 def is_function_triggered(chat_response: dict):
