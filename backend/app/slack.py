@@ -59,7 +59,15 @@ class Message:
 
         for data in response["messages"]["matches"]:
             text = data["text"]
-            user = data["username"]  # Slack internal name
+
+            user_id = data["user"]
+            user_res = get_user_info(user_id)
+            user = (
+                user_res["user"].get("display_name_normalized")
+                or user_res["user"].get("display_name")
+                or user_res["user"].get("real_name")
+                or user_res["user"].get("name")
+            )
             msg = Message(user=user, text=text)
             out.append(msg)
 
@@ -85,10 +93,25 @@ def search_messages(channel_name: str, from_date: datetime, to_date: datetime):
         max_page = res["messages"]["paging"]["pages"]
         current_page += 1
 
+        # 開発中は GPT 節約のために最新 30 件だけにする
         if env.is_dev():
             break
 
     return messages
+
+
+def get_channel_info(channel_id: str):
+    res = client.conversations_info(channel=channel_id)
+    print("got channel info:", res)
+
+    return res
+
+
+def get_user_info(user_id: str):
+    res = client.users_info(user=user_id)
+    print("got user info:", res)
+
+    return res
 
 
 def verify_signature(body: str, headers: dict):

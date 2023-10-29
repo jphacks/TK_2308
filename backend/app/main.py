@@ -5,12 +5,19 @@ from .googlecal.googlecal import read_schedule_from_google
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 
 from . import schemas, slack, booking, summarize
+from .lib import env
 
 app = FastAPI()
 
 
 with open(".openai.key", "r") as f:
     openai.api_key = f.read()
+
+
+if env.is_prod():
+    print("*** RUNNING ON PRODUCTION ENV ***")
+else:
+    print("--- Running on development env ---")
 
 
 @app.get("/")
@@ -100,7 +107,15 @@ def handle_message(event: schemas.SlackEvent, background_tasks: BackgroundTasks)
     message = str(event.event["text"])
     response_message = "message received"
 
-    if booking.is_asking_for_booking(message):
+    if summarize.is_asking_for_summary(message):
+        print("is summary request")
+
+        background_tasks.add_task(add_hatching_reaction, event)
+        background_tasks.add_task(generate_summary, event)
+
+        return {"status": "ok"}
+
+    elif booking.is_asking_for_booking(message):
         print("is booking")
 
         background_tasks.add_task(add_eyes_reaction, event)
@@ -128,6 +143,17 @@ def add_eyes_reaction(event: schemas.SlackEvent):
         print("WARNING: failed to add a reaction")
 
 
+def add_hatching_reaction(event: schemas.SlackEvent):
+    name = "hatching_chick"
+    ts = event.event["ts"]
+    channel_id = event.event["channel"]
+
+    res = slack.add_reaction(name, ts, channel_id)
+
+    if res is None:
+        print("WARNING: failed to add a reaction")
+
+
 def create_booking(event: schemas.SlackEvent):
     print("creating booking. target event:", event)
     cal = read_schedule_from_google()
@@ -141,3 +167,26 @@ def create_booking(event: schemas.SlackEvent):
         print("Error: failed to post message")
     else:
         print("message has been succesfully posted")
+
+
+def generate_summary(event: schemas.SlackEvent):
+    print("generating summary. target event:", event)
+    from_date = datetime.now()
+    to_date = datetime.now()
+
+    # 要約依頼メッセージを受け取ったチャンネルを要約してもらう場合は以下
+    # channel_id = event.event["channel"]
+    # channel_name = slack.get_channel_info(channel_id)["channel"]["name"]
+
+    # 特定のチャンネルの要約を生成さえる
+    channel_name = "jnsenior"
+
+    messages = slack.search_messages(channel_name, from_date, to_date)
+    print("messages to summarize:", messages)
+
+    res = summarize.summarize_messages(messages)
+    summary = res.choices[0].message.content
+
+    print("generated summary:", summary)
+
+    slack.post_message(summary)

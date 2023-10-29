@@ -222,7 +222,6 @@ def create_event(
         },
     }
     return event
->>>>>>> master
 
 
 def send_chat(
