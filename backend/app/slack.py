@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from slack_sdk import WebClient
 from slack_sdk.signature import SignatureVerifier
 from slack_sdk.errors import SlackApiError
+from app.lib import env
 
 DEFAULT_CHANNEL = "#_gtb_bot"
 
@@ -76,15 +77,18 @@ def search_messages(channel_name: str, from_date: datetime, to_date: datetime):
     max_page = math.inf
 
     while current_page < max_page:
-        res = user_client.search_messages(query=query)
+        res = user_client.search_messages(query=query, page=current_page)
         msgs = Message.from_response(res)
         messages.extend(msgs)
-        TODO: increment
 
         current_page = res["messages"]["paging"]["page"]
         max_page = res["messages"]["paging"]["pages"]
+        current_page += 1
 
-    return res
+        if env.is_dev():
+            break
+
+    return messages
 
 
 def verify_signature(body: str, headers: dict):
