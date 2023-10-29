@@ -84,7 +84,7 @@ def search_messages(channel_name: str, from_date: datetime, to_date: datetime):
     current_page = 1
     max_page = math.inf
 
-    while current_page < max_page:
+    while current_page <= max_page:
         res = user_client.search_messages(query=query, page=current_page)
         msgs = Message.from_response(res)
         messages.extend(msgs)
@@ -93,8 +93,8 @@ def search_messages(channel_name: str, from_date: datetime, to_date: datetime):
         max_page = res["messages"]["paging"]["pages"]
         current_page += 1
 
-        # 開発中は GPT 節約のために最新 30 件だけにする
-        if env.is_dev():
+        # 開発中は GPT 節約のために最新数十件だけにする
+        if env.is_dev() and current_page >= 3:
             break
 
     return messages

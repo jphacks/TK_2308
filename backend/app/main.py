@@ -179,12 +179,14 @@ def generate_summary(event: schemas.SlackEvent):
     # channel_name = slack.get_channel_info(channel_id)["channel"]["name"]
 
     # 特定のチャンネルの要約を生成さえる
-    channel_name = "jnsenior"
+    channel_name = "time-tappun"
+
+    user_prompt = event.event["text"]
 
     messages = slack.search_messages(channel_name, from_date, to_date)
     print("messages to summarize:", messages)
 
-    res = summarize.summarize_messages(messages)
+    res = summarize.summarize_messages(user_prompt, messages)
     summary = res.choices[0].message.content
 
     print("generated summary:", summary)
