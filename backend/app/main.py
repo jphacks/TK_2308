@@ -26,6 +26,11 @@ def post_chat(chat: schemas.ChatPost):
     res = booking.create_booking(schedules_str, chat.message)
     content = res.choices[0].message.content
 
+    res = chatgpt.send_chat(message_str)
+    content = res.choices[0].message.content
+    if content is None:
+        return
+
     return schemas.Chat(message=chat.message, response=content)
 
 
