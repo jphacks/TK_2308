@@ -179,7 +179,7 @@ def generate_summary(event: schemas.SlackEvent):
     # channel_name = slack.get_channel_info(channel_id)["channel"]["name"]
 
     # 特定のチャンネルの要約を生成さえる
-    channel_name = "time-tappun"
+    channel_name = "times_kino-ma"
 
     user_prompt = event.event["text"]
 
