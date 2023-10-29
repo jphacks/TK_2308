@@ -5,12 +5,16 @@ BOOKING_TOOKENS = ["調整", "ミーティング", "空いてる", "あいてる
 
 
 def is_asking_for_booking(message: str) -> bool:
-    for token in BOOKING_TOOKENS:
-        if token in message:
-            print(f"message contains '{token}'")
-            return True
+    # メンションがついていればデフォルトで予定調整依頼として扱う
+    return True
 
-    return False
+    # 予約後リストから半手しいたい場合は以下
+    #for token in BOOKING_TOOKENS:
+    #    if token in message:
+    #        print(f"message contains '{token}'")
+    #        return True
+    #
+    #return False
 
 
 def create_booking(my_schedules: str, message: str):
